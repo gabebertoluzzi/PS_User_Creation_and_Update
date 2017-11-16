@@ -1,0 +1,17 @@
+Implement,GivenName,LastName,Initials,OfficeName,Description,Mail,StreetAddress,City,PostalCode,State,Country,Company,Department,EmployeeID,ExtensionAttribute1,Title,Phone,Manager,ProfilePath,ScriptPath,HomeDirectory,HomeDrive,Password,PasswordNeverExpires,Enabled,TargetOU,ProxyAddresses,memberOf
+Yes,Foo,User,FOO,,Foo User,foo_user@mednetstudy.com,110 Cheshire Lane,Minnetonka,55305,MN,USA,MedNet Solutions,Finance,,,Foo User,555-0123,gbertoluzzi,,,,,Password!23,FALSE,TRUE,"OU=Test_Users,OU=Users,OU=Mednet",SMTP:CHECK;SMTP:CHECK2,MedNet_Users
+,,,,,,,,,,,,,##,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,##,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,CHOOSE,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,FROM,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,DPT LIST:,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,ex.,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,SALES,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,IT,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,DEV,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,PR.MGMT,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,MRKT,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,COMPLIANCE,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,QA,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,##,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,##,,,,,,,,,,,,,,,
