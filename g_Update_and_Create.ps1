@@ -12,7 +12,7 @@ $CSVPath  = $path + "\ad_users.csv"
 $ADServer = "mtkadcv01"
 $addn     = (Get-ADDomain).DistinguishedName
 $dnsroot  = (Get-ADDomain).DNSRoot
-$logpath      = $path + "\ad_users.log"
+$logpath  = $path + "\LOG_ad_users.log"
 $date     = Get-Date
 $Credential = 'a-gbertoluzzi' #Read-Host -Prompt "Input admin account name"
 $Cred = Get-Credential $Credential
@@ -50,35 +50,21 @@ Function Split-ToCreateOrUpdate {
 }
 
 
-
-
-<#
-#### 
-First step is to create any new users.  Just evaluate the for any new
-CSV rows added, basically.  
-
-Once users created = users/csv, then move onto
-updating each user.  This way, new users will just now be given any attri-
-butes beyond their names.  
-
-Create separate loop for the adding to AD Groups.  
-
-Separate as much into break down modules/functions.  
-
-?Can the log still go to original folder of user, rather than the admin
-user?
-#>
-
 Function Update-ToHost {
     Write-Host "Update-ToHost function $sam"
 }
 
 Function New-ADUsers {
-
+# Creates new users with the New-ADuser cmdlet
     New-ADUser $Sam -Credential $Cred -GivenName $_.'First Name' -Surname $_.'Last Name' `
-    -DisplayName $_.'Display Name'
+    -DisplayName $_.'Display Name' -UserPrincipalName ($Sam + "@" + $dnsroot) `
+    -StreetAddress $_.'Street Address' -City $_.City -State $_.State -PostalCode `
+    $_.'Zip Code' -Country $_.Country -Title $_.'Job Title' -Company $_.Company `
+    -Description $_.Description -EmailAddress $_.'Email Address' -OfficePhone $_.Phone `
+    -Path $_.TargetOU
     
     Write-Host "New AD User $sam created"
+    "[ACTION - CREATION]`t New AD User $sam created in location $TargetOU" | Out-File $logpath -append
 <#
   New-ADUser $sam -GivenName $_.First Name -Initials $_.Initials `
   -Surname $_.LastName -DisplayName ($_.LastName + "," + $_.Initials + " " + $_.GivenName) `
@@ -93,6 +79,7 @@ Function New-ADUsers {
 }
 
 Function Update-SomeUsers{    
+    #Updates existing users 
     #Test that the specified csv file is valid before inporting it, else throw an error and quit
     If ((Get-ChildItem $CSVPath).Extension -eq ".csv") {
         $csvfile = Import-Csv -path $CSVPath
@@ -139,35 +126,35 @@ Function Update-SomeUsers{
             #added the 'if clause' to ensure that blank fields in the CSV are ignored.
             #the object names must be the LDAP names. get values using ADSI Edit
             IF ($DisplayName) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{displayName=$DisplayName} }
-            Else {"DisplayName not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"DisplayName not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($StreetAddress) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{StreetAddress=$StreetAddress} }
-            Else {"StreetAddress not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"StreetAddress not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($City ) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{l=$City} }
-            Else {"City not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"City not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             If ($State) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -State $State }
-            Else {"State not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"State not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($PostCode) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{postalCode=$PostCode} }
-            Else {"PostCode not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"PostCode not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             #Country did not accept the -Replace switch. It works with the -Country switch
             IF ($Country) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam  -Country $Country }
-            Else {"Country not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Country not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Title) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{Title=$Title} }
-            Else {"Job Title not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Job Title not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Company ) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{Company=$Company} }
-            Else {"Company not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Company not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Description ) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{Description=$Description} }
-            Else {"Description not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Description not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Department) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{Department=$Department}  }
-            Else {"Department not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Department not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Office) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{physicalDeliveryOfficeName=$Office}  }
-            Else {"Office not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Office not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Phone) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{telephoneNumber=$Phone}  }
-            Else {"Phone number not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Phone number not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             IF ($Mail) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Replace @{mail=$Mail}  }
-            Else {"Maile number not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Maile number not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             #Manager did not accept the -Replace switch. It works with the -manager switch
             IF ($Manager -and $ManagerDN) { Set-ADUser -server $ADServer -Credential $Cred -Identity $sam -Manager $ManagerDN} 
-            Else {"Manager not set for $DisplayName because it is not populated in the CSV file" | Out-File $logfile -Append }
+            Else {"Manager not set for $DisplayName because it is not populated in the CSV file" | Out-File $logpath -Append }
             #Change name format to 'FirstName Lastname'
             #This is essential because some Sutton users display as sAMAccountName
             #Rename-ADObject renames the users in the $DisplayName format
