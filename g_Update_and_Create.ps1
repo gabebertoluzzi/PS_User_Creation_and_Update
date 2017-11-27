@@ -14,14 +14,45 @@ $addn     = (Get-ADDomain).DistinguishedName
 $dnsroot  = (Get-ADDomain).DNSRoot
 $logpath  = $path + "\LOG_ad_users.log"
 $date     = Get-Date
-$Credential = 'a-gbertoluzzi' #Read-Host -Prompt "Input admin account name"
-$Cred = Get-Credential $Credential
+#$Credential = 'a-gbertoluzzi' #Read-Host -Prompt "Input admin account name"
+#$Cred = Get-Credential $Credential
 
 #----
 # MORE STUFF
 Import-Module ActiveDirectory
 #----
 
+Function Get-ImplementStatus {
+    Import-CSV $CSVPath | ForEach-Object {
+        if ($_.Implement -eq "y") {
+            Get-UpdateCheck
+        } 
+        else {
+            Write-Host "Not implemented"
+        }
+    }
+}
+
+Function Get-UpdateCheck {
+    $sam = $_.UserName
+    
+    #Try   { $exists = Get-ADUser -LDAPFilter "(sAMAccountName=$sam)" }
+    #Catch { Write-Host "User $Sam not found" }
+    $exists = Get-ADUser -LDAPFilter "(sAMAccountName=$sam)"
+    if (!$exists) {
+        
+
+        Write-Host "`nCreate track chosen for user $Sam"
+        #New-ADUsers
+    }
+    else {
+        #Update-SomeUsers
+        Write-Host "`nUpdate track chosen for user: $sam"
+        #Update-ToHost
+        #Update-SomeUsers
+        
+    }   
+}
 
 
 Function Split-ToCreateOrUpdate {
@@ -36,13 +67,13 @@ Function Split-ToCreateOrUpdate {
             
 
             Write-Host "`nCreate track chosen for user $Sam"
-            New-ADUsers
+            #New-ADUsers
         }
         else {
             #Update-SomeUsers
             Write-Host "`nUpdate track chosen for user: $sam"
-            Update-ToHost
-            Update-SomeUsers
+            #Update-ToHost
+            #Update-SomeUsers
             
         }   
     }
@@ -61,7 +92,8 @@ Function New-ADUsers {
     -StreetAddress $_.'Street Address' -City $_.City -State $_.State -PostalCode `
     $_.'Zip Code' -Country $_.Country -Title $_.'Job Title' -Company $_.Company `
     -Description $_.Description -EmailAddress $_.'Email Address' -OfficePhone $_.Phone `
-    -Path $_.TargetOU
+    -Path $_.TargetOU 
+    #-cn $_.'Display Name'
     
     Write-Host "New AD User $sam created"
     "[ACTION - CREATION]`t New AD User $sam created in location $TargetOU" | Out-File $logpath -append
@@ -181,5 +213,6 @@ Function Update-SomeUsers{
 
 
 
-
-Split-ToCreateOrUpdate
+# Implementation of functions:
+Get-ImplementStatus
+#Split-ToCreateOrUpdate
